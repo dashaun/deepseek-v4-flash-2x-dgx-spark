@@ -1,0 +1,10 @@
+deepseek-v4-flash-2x-dgx-spark: DeepSeek-V4-Flash on 2x DGX Spark (vLLM + Ray in Docker)
+Copyright 2026 DaShaun Carter
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes software from eugr/spark-vllm-docker
+(https://github.com/eugr/spark-vllm-docker), licensed under the MIT License:
+  mods/instanttensor-hybrid-draft-loader/
+  Copyright (c) 2026 Eugene Rakhmatulin
+  See mods/instanttensor-hybrid-draft-loader/LICENSE.
