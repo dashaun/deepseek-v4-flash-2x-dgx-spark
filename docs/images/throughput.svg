@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 356" width="720" height="356" role="img" aria-labelledby="t d">
+  <title id="t">Short-prompt throughput by concurrency</title>
+  <desc id="d">512-token answers. Total tokens per second: 41.2 at 1 request, 50.4 at 2, 74.3 at 4, 88.3 at 8. Tokens per second per request: 42.9 at 1, 26.9 at 2, 20.4 at 4, 13.3 at 8.</desc>
+  <style>
+    text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .surface { fill: #fcfcfb; }
+    .ink { fill: #0b0b0b; }
+    .ink2 { fill: #52514e; }
+    .muted { fill: #898781; }
+    .grid { stroke: #e1e0d9; stroke-width: 1; }
+    .axis { stroke: #c3c2b7; stroke-width: 1; }
+    .s1 { fill: #2a78d6; }
+    .s2 { fill: #eb6834; }
+    @media (prefers-color-scheme: dark) {
+      .surface { fill: #1a1a19; }
+      .ink { fill: #ffffff; }
+      .ink2 { fill: #c3c2b7; }
+      .grid { stroke: #2c2c2a; }
+      .axis { stroke: #383835; }
+      .s1 { fill: #3987e5; }
+      .s2 { fill: #d95926; }
+    }
+  </style>
+  <rect class="surface" x="0" y="0" width="720" height="356" rx="8"/>
+  <text class="ink" x="28" y="34" font-size="17" font-weight="600">Short-prompt throughput vs. concurrency</text>
+  <text class="ink2" x="28" y="56" font-size="13">Tokens per second, 512-token answers. More requests raise the total but slow each one.</text>
+
+  <!-- legend -->
+  <rect class="s1" x="28" y="70" width="12" height="12" rx="2"/>
+  <text class="ink" x="46" y="80" font-size="13">Total</text>
+  <rect class="s2" x="100" y="70" width="12" height="12" rx="2"/>
+  <text class="ink" x="118" y="80" font-size="13">Per request</text>
+
+  <!-- gridlines at 0, 25, 50, 75, 100 tok/s (y = 290 - v * 1.94) -->
+  <line class="grid" x1="70" y1="96" x2="690" y2="96"/>
+  <line class="grid" x1="70" y1="144.5" x2="690" y2="144.5"/>
+  <line class="grid" x1="70" y1="193" x2="690" y2="193"/>
+  <line class="grid" x1="70" y1="241.5" x2="690" y2="241.5"/>
+  <line class="axis" x1="70" y1="290" x2="690" y2="290"/>
+  <text class="muted" x="60" y="100" font-size="12" text-anchor="end">100</text>
+  <text class="muted" x="60" y="148.5" font-size="12" text-anchor="end">75</text>
+  <text class="muted" x="60" y="197" font-size="12" text-anchor="end">50</text>
+  <text class="muted" x="60" y="245.5" font-size="12" text-anchor="end">25</text>
+  <text class="muted" x="60" y="294" font-size="12" text-anchor="end">0</text>
+
+  <!-- columns: 24px wide, 2px surface gap, 4px rounded cap -->
+  <!-- 1 request -->
+  <path class="s1" d="M122.5 290 V214.1 Q122.5 210.1 126.5 210.1 H142.5 Q146.5 210.1 146.5 214.1 V290 Z"/>
+  <path class="s2" d="M148.5 290 V210.8 Q148.5 206.8 152.5 206.8 H168.5 Q172.5 206.8 172.5 210.8 V290 Z"/>
+  <!-- 2 requests -->
+  <path class="s1" d="M277.5 290 V196.2 Q277.5 192.2 281.5 192.2 H297.5 Q301.5 192.2 301.5 196.2 V290 Z"/>
+  <path class="s2" d="M303.5 290 V241.8 Q303.5 237.8 307.5 237.8 H323.5 Q327.5 237.8 327.5 241.8 V290 Z"/>
+  <!-- 4 requests -->
+  <path class="s1" d="M432.5 290 V149.9 Q432.5 145.9 436.5 145.9 H452.5 Q456.5 145.9 456.5 149.9 V290 Z"/>
+  <path class="s2" d="M458.5 290 V254.4 Q458.5 250.4 462.5 250.4 H478.5 Q482.5 250.4 482.5 254.4 V290 Z"/>
+  <!-- 8 requests -->
+  <path class="s1" d="M587.5 290 V122.7 Q587.5 118.7 591.5 118.7 H607.5 Q611.5 118.7 611.5 122.7 V290 Z"/>
+  <path class="s2" d="M613.5 290 V268.2 Q613.5 264.2 617.5 264.2 H633.5 Q637.5 264.2 637.5 268.2 V290 Z"/>
+
+  <!-- selective value labels: per-request at 1 request, both series at 8 requests.
+       The total at 1 request (41.2) is left to the axis and table: its label would collide with 42.9. -->
+  <text class="ink" x="160.5" y="200.8" font-size="12" font-weight="600" text-anchor="middle">42.9</text>
+  <text class="ink" x="599.5" y="112.7" font-size="12" font-weight="600" text-anchor="middle">88.3</text>
+  <text class="ink" x="625.5" y="258.2" font-size="12" font-weight="600" text-anchor="middle">13.3</text>
+
+  <!-- x-axis -->
+  <text class="ink" x="147.5" y="310" font-size="13" text-anchor="middle">1</text>
+  <text class="ink" x="302.5" y="310" font-size="13" text-anchor="middle">2</text>
+  <text class="ink" x="457.5" y="310" font-size="13" text-anchor="middle">4</text>
+  <text class="ink" x="612.5" y="310" font-size="13" text-anchor="middle">8</text>
+  <text class="muted" x="380" y="330" font-size="12" text-anchor="middle">Concurrent requests</text>
+
+  <text class="muted" x="28" y="348" font-size="11">Earlier run: OTA 7.5.0, kernel 6.17, thinking off, one round per level. Full values in the README table.</text>
+</svg>

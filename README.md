@@ -26,6 +26,40 @@ The scripts install nothing on the Spark hosts. A few one-time host settings are
 - **API:** `http://$HEAD_HOST:8000/v1` (OpenAI-compatible)
 - **Context:** the full 1,048,576 tokens, with the KV cache fixed at 11 GiB
 
+## Architecture
+
+```mermaid
+flowchart LR
+  scripts["Your machine<br/>start.sh · stop.sh · status.sh<br/>network.sh · loadtest.py"]
+  client["OpenAI-compatible client"]
+  subgraph head["Head node (HEAD_HOST)"]
+    direction TB
+    subgraph hc["container: vllm_node"]
+      direction TB
+      api["vLLM API :8000"]
+      rayh["Ray head"]
+      tp0["TP rank 0"]
+    end
+  end
+  subgraph worker["Worker node (WORKER_HOST)"]
+    direction TB
+    subgraph wc["container: vllm_node"]
+      direction TB
+      rayw["Ray worker"]
+      tp1["TP rank 1"]
+    end
+  end
+  scripts -- "SSH + docker" --> head
+  scripts -- "SSH + docker" --> worker
+  client -- "HTTP :8000" --> api
+  rayh <-- "Ray, Gloo, NCCL bootstrap<br/>over ETH_IF" --> rayw
+  tp0 <== "NCCL over RoCE<br/>2 QSFP cables = 4 devices (IB_HCA)" ==> tp1
+```
+
+- **Control plane:** your machine drives both nodes over SSH (Tailscale, DNS or `~/.ssh/config` names). The scripts run `docker` commands there and install nothing.
+- **Bootstrap:** Ray, Gloo and NCCL find each other over the QSFP interface `ETH_IF` (`HEAD_IP` ↔ `WORKER_IP`).
+- **Tensor traffic:** the two tensor-parallel ranks exchange activations with NCCL over RDMA, on all four RoCE devices in `IB_HCA`.
+
 ## Quick start
 
 Complete the [Prerequisites](#prerequisites) first. Then configure your two nodes once:
@@ -150,6 +184,8 @@ DGX OS OTA 7.6.0, kernel 7.0, desktop disabled, `--max-model-len 1048576`, `--kv
 
 **Startup:** healthy after 244 s. The lowest free host memory during startup was 8.8 GB (head) and 9.9 GB (worker).
 
+![Time to first token for long prompts: 62.6 s for one 129K-token prompt, 114.6 s and 227.7 s for the slowest of 2 and 4 concurrent 129K prompts, and 729 s for one 905K-token prompt](docs/images/ttft.svg)
+
 **Long prompts** (`./loadtest.py --prompt-tokens 82400 --max-tokens 256 1 2 4`: 128,961 prompt tokens per request, a unique document each):
 
 | Concurrent | Wall time | Avg time to first token | Max time to first token | Prefill tok/s | Output tok/s per request* |
@@ -164,6 +200,8 @@ DGX OS OTA 7.6.0, kernel 7.0, desktop disabled, `--max-model-len 1048576`, `--kv
 - **Untested idea:** a larger `--max-num-batched-tokens` might shorten time to first token. Total prefill speed didn't change with concurrency, so it may not help, and it would use more of the limited memory.
 - **Memory held steady:** free host memory stayed at 8.5–8.8 GB on the head and 9.0–9.2 GB on the worker throughout.
 - **Cable balance:** about 665 GB went each way over RoCE during the sweep, split evenly across all four devices (about 166 GB each).
+
+![RoCE traffic per device during the 128K sweep: about 166 GB on each of the four RoCE devices, two per QSFP port](docs/images/roce-balance.svg)
 - **Cold start:** the first long request after startup was much slower (614 tokens/s) while kernels warmed up.
 
 **Near-full context** (`./loadtest.py --prompt-tokens 579000 --max-tokens 256 1`):
@@ -189,6 +227,8 @@ DGX OS OTA 7.5.0, kernel 6.17, desktop enabled, `--gpu-memory-utilization 0.85`,
 | 64 MiB | 3.2 ms | 169 Gbit/s |
 | 256 MiB | 15.0 ms | 144 Gbit/s |
 | 1024 MiB | 46.6 ms | 184 Gbit/s |
+
+![Short-prompt throughput: total tokens/s rises from 41.2 to 88.3 as concurrency goes from 1 to 8, while per-request tokens/s falls from 42.9 to 13.3](docs/images/throughput.svg)
 
 **Short prompts** (`./loadtest.py`, 512-token answers, thinking off, one round per level):
 
