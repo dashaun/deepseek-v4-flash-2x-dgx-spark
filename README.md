@@ -4,6 +4,8 @@ Serve `deepseek-ai/DeepSeek-V4-Flash-0731` with tensor parallelism across two NV
 Everything is controlled from this directory over SSH, and vLLM and Ray run only inside Docker containers.
 The scripts install nothing on the Spark hosts. A few one-time host settings are listed under [Prerequisites](#prerequisites) for you to apply yourself.
 
+![The two DGX Spark units side by side on a shelf, seen from above, with the two QSFP cables and power cables connected at the back](docs/images/sparks.jpg)
+
 ## Status and disclaimer
 
 > **Experimental. Not for production use.** This is a reproducible lab setup, shared as a reference.
@@ -69,6 +71,8 @@ HEAD_HOST=spark-01 WORKER_HOST=spark-02 ./network.sh discover   # creates cluste
 ./network.sh verify                                             # links, MTU, RoCE v2 GID, jumbo pings, config
 ```
 
+![Output of ./network.sh verify: four QSFP links at 200G with MTU 9000, RoCE ACTIVE and jumbo pings under 1.1 ms, and every link, cluster.env and node check passing. Hostnames and paths are blurred.](docs/images/network-verify.svg)
+
 Or copy `cluster.env.example` to `cluster.env` and set `HEAD_HOST`, `WORKER_HOST`, `HEAD_IP` and `WORKER_IP` by hand.
 
 `HEAD_HOST`, `WORKER_HOST`, `HEAD_IP` and `WORKER_IP` can also be overridden per command,
@@ -84,6 +88,8 @@ Then:
 ./start.sh          # after `stop.sh serve`: skips the steps that are done, relaunches vLLM and waits for /health
 ./stop.sh           # stop vLLM and remove containers on both nodes
 ```
+
+![Output of ./status.sh: both containers running with about 8 GB of memory free, Ray reporting 2 nodes and 2 GPUs, and vLLM healthy serving deepseek-ai/DeepSeek-V4-Flash-0731. Hostnames are blurred.](docs/images/status.svg)
 
 Test request:
 
@@ -173,6 +179,8 @@ On DGX Spark the GPU and the OS share the same memory, so vLLM's memory settings
 - **Capacity:** 11 GiB holds 1,146,448 tokens, about 104K tokens per GiB, or 1.09× one full 1,048,576-token request. A 1M-token request needs 10.06 GiB.
 - **Safe range:** KV caches up to 14.35 GiB started and served with about 7–8 GB of host memory left free. A 16.6 GiB KV cache froze both nodes (see [Troubleshooting](#troubleshooting)). Change the size in small steps and watch free memory with `./status.sh` while starting.
 - **Why not `--gpu-memory-utilization`:** at 0.85, the KV budget vLLM measured at startup varied from 9.66 to 14.35 GiB between identical starts. So a 1M context fit on some starts and not others.
+
+![KV cache memory per start on the head node: 12.84, 9.66, 14.35 and 10.03 GiB at utilization 0.85, 16.6 GiB at 0.87 which froze both nodes, and a fixed 11 GiB that fits the 10.06 GiB a 1M-token request needs](docs/images/kv-cache-per-start.svg)
 
 ## Measured results
 

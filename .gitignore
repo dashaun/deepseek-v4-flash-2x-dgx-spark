@@ -1,3 +1,4 @@
 # Site-specific settings; start from cluster.env.example
 cluster.env
 __pycache__/
+.DS_Store
